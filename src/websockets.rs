@@ -2,8 +2,6 @@ use std::sync::atomic::{AtomicBool, Ordering};
 
 use futures::StreamExt;
 use serde_json::from_str;
-use serde::de::DeserializeOwned;
-use std::marker::PhantomData;
 use tokio::net::TcpStream;
 use tokio_tungstenite::tungstenite::handshake::client::Response;
 use tokio_tungstenite::tungstenite::Message;
@@ -14,9 +12,6 @@ use url::Url;
 use crate::config::Config;
 use crate::errors::*;
 use crate::ws_model::WebsocketEventUntag;
-use crate::ws_model::{AllBookTickerEvent, BookTickerEvent};
-use crate::rest_model::OrderBook;
-
 
 
 pub static STREAM_ENDPOINT: &str = "stream";
@@ -71,6 +66,7 @@ pub struct WebSockets<'a, WE: 'a + DeserializeOwned + Send + Sync> {
     orderbook_handler: Box<dyn FnMut(Box<OrderBook>) -> Result<()> + 'a>,
     book_ticker_handler: Box<dyn FnMut(Box<BookTickerEvent>) -> Result<()> + 'a>,
     all_book_ticker_handler: Box<dyn FnMut(Box<AllBookTickerEvent>) -> Result<()> + 'a>,
+    conf: Option<WebSocketConfig>,
 }
 
 
