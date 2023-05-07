@@ -247,8 +247,17 @@ pub struct DepthOrderBookEvent {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct BookTickerEvent {
+    #[serde(rename = "e")]
+    pub event_type: String,
+
     #[serde(rename = "u")]
     pub update_id: u64,
+
+    #[serde(rename = "E")]
+    pub event_time: u64,
+
+    #[serde(rename = "T")]
+    pub transaction_time: u64,
 
     #[serde(rename = "s")]
     pub symbol: String,
