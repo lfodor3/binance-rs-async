@@ -60,7 +60,7 @@ pub fn diff_book_depth_stream(symbol: &str, update_speed: u16) -> String { forma
 
 fn combined_stream(streams: Vec<String>) -> String { streams.join("/") }
 
-pub struct WebSockets<'a, WE: 'a + WebsocketEvent + DeserializeOwned + Send + Sync> {
+pub struct WebSockets<'a, WE: 'a + DeserializeOwned + Send + Sync> {
     socket: Option<(WebSocketStream<MaybeTlsStream<TcpStream>>, PhantomData<WE>)>,
     handler: Box<dyn FnMut(WE) -> Result<()> + 'a>,
     orderbook_handler: Box<dyn FnMut(Box<OrderBook>) -> Result<()> + 'a>,
