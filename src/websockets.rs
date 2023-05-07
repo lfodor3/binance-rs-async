@@ -11,8 +11,6 @@ use url::Url;
 
 use crate::config::Config;
 use crate::errors::*;
-use crate::ws_model::WebsocketEventUntag;
-
 
 pub static STREAM_ENDPOINT: &str = "stream";
 pub static WS_ENDPOINT: &str = "ws";
@@ -60,15 +58,11 @@ pub fn diff_book_depth_stream(symbol: &str, update_speed: u16) -> String { forma
 
 fn combined_stream(streams: Vec<String>) -> String { streams.join("/") }
 
-pub struct WebSockets<'a, WE: 'a + WebsocketEvent + DeserializeOwned + Send + Sync> {
-    socket: Option<(WebSocketStream<MaybeTlsStream<TcpStream>>, PhantomData<WE>)>,
-    handler: Box<dyn FnMut(WE) -> Result<()> + 'a>,
-    orderbook_handler: Box<dyn FnMut(Box<OrderBook>) -> Result<()> + 'a>,
-    book_ticker_handler: Box<dyn FnMut(Box<BookTickerEvent>) -> Result<()> + 'a>,
-    all_book_ticker_handler: Box<dyn FnMut(Box<AllBookTickerEvent>) -> Result<()> + 'a>,
-    conf: Option<WebSocketConfig>,
+pub struct WebSockets<'a, WE> {
+    pub socket: Option<(WebSocketStream<MaybeTlsStream<TcpStream>>, Response)>,
+    handler: Box<dyn FnMut(WE) -> Result<()> + 'a + Send>,
+    conf: Config,
 }
-
 
 impl<'a, WE: serde::de::DeserializeOwned> WebSockets<'a, WE> {
     /// New websocket holder with default configuration
@@ -84,22 +78,16 @@ impl<'a, WE: serde::de::DeserializeOwned> WebSockets<'a, WE> {
     /// New websocket holder with provided configuration
     /// # Examples
     /// see examples/binance_websockets.rs
-    pub fn new(
-        handler: Box<dyn FnMut(WE) -> Result<()> + 'a>,
-        orderbook_handler: Box<dyn FnMut(Box<OrderBook>) -> Result<()> + 'a>,
-        book_ticker_handler: Box<dyn FnMut(Box<BookTickerEvent>) -> Result<()> + 'a>,
-        all_book_ticker_handler: Box<dyn FnMut(Box<AllBookTickerEvent>) -> Result<()> + 'a>,
-    ) -> WebSockets<'a, WE> {
+    pub fn new_with_options<Callback>(handler: Callback, conf: Config) -> WebSockets<'a, WE>
+    where
+        Callback: FnMut(WE) -> Result<()> + 'a + Send,
+    {
         WebSockets {
             socket: None,
-            handler,
-            orderbook_handler,
-            book_ticker_handler,
-            all_book_ticker_handler,
-            conf: None,
+            handler: Box::new(handler),
+            conf,
         }
     }
-
 
     /// Connect to multiple websocket endpoints
     /// N.B: WE has to be CombinedStreamEvent
