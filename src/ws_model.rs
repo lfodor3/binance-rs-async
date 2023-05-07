@@ -319,7 +319,6 @@ pub enum WebsocketEventUntag {
     WebsocketEvent(WebsocketEvent),
     Orderbook(Box<OrderBook>),
     BookTicker(Box<BookTickerEvent>),
-    AllBookTicker(Box<AllBookTickerEvent>)
 }
 
 impl<T> CombinedStreamEvent<T> {

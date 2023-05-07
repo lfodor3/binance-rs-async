@@ -142,13 +142,8 @@ impl<'a, WE: serde::de::DeserializeOwned> WebSockets<'a, WE> {
                         if msg.is_empty() {
                             return Ok(());
                         }
-                        let event: WebsocketEventUntag = from_str(msg.as_str())?;
-                        match event {
-                            WebsocketEventUntag::WebsocketEvent(e) => (self.handler)(e)?,
-                            WebsocketEventUntag::Orderbook(e) => (self.orderbook_handler)(e)?,
-                            WebsocketEventUntag::BookTicker(e) => (self.book_ticker_handler)(e)?,
-                            WebsocketEventUntag::AllBookTicker(e) => (self.all_book_ticker_handler)(e)?,
-                        }
+                        let event: WE = from_str(msg.as_str())?;
+                        (self.handler)(event)?;
                     }
                     Message::Ping(_) | Message::Pong(_) | Message::Binary(_) | Message::Frame(_) => {}
                     Message::Close(e) => {
